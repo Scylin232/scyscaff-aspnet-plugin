@@ -1,0 +1,5 @@
+﻿using Application.Abstractions.Messaging;
+
+namespace Application.CQRS.{{ model.key }}.Commands;
+
+public sealed record Delete{{ model.key }}Command(Guid Id) : ICommand;

@@ -1,0 +1,28 @@
+﻿using Domain.Models;
+using Application.Abstractions.Data;
+
+namespace Application.DTO;
+
+public class {{ model.key }}DTO : IDTO<{{ model.key }}>
+{
+    {{~ for field in model.value ~}}
+    public required {{ field.value | string.downcase }} {{ field.key }} { get; set; }
+    {{~ end ~}}
+    
+    public {{ model.key }} InstantiateFromDTO()
+    {
+        return new {{ model.key }}(Guid.NewGuid())
+        {
+            {{~ for field in model.value ~}}
+            {{ field.key }} = {{ field.key }},
+            {{~ end ~}}
+        };
+    }
+
+    public void ModifyFromDTO({{ model.key }} {{ model.key | string.downcase }})
+    {
+        {{~ for field in model.value ~}}
+        {{ model.key | string.downcase }}.{{ field.key }} = {{ field.key }};
+        {{~ end ~}}
+    }
+}

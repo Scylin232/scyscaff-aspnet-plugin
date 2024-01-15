@@ -1,0 +1,25 @@
+﻿using Application.Abstractions.Messaging;
+using Domain.Repositories;
+using SharedKernel.Core;
+using SharedKernel.Repositories;
+
+namespace Application.CQRS.{{ model.key }}.Commands;
+
+public sealed class Update{{ model.key }}CommandHandler(I{{ model.key }}Repository {{ model.key | string.downcase }}Repository, IUnitOfWork unitOfWork) : ICommandHandler<Update{{ model.key }}Command>
+{
+    public async Task<Result> Handle(Update{{ model.key }}Command request, CancellationToken cancellationToken)
+    {
+        Domain.Models.{{ model.key }}? {{ model.key | string.downcase }} = await {{ model.key | string.downcase }}Repository.GetById(request.Id);
+
+        if ({{ model.key | string.downcase }} is null)
+            return Result.Failure<Domain.Models.{{ model.key | string.downcase }}>(new Error("{{ model.key }}.NotFound", $"{{ model.key }} with id {request.Id} is not found."));
+        
+        request.{{ model.key }}DTO.ModifyFromDTO({{ model.key | string.downcase }});
+
+        await {{ model.key | string.downcase }}Repository.Update({{ model.key | string.downcase }});
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+}

@@ -1,0 +1,5 @@
+﻿using Application.Abstractions.Messaging;
+
+namespace Application.CQRS.{{ model.key }}.Queries;
+
+public sealed record Get{{ model.key }}ByIdQuery(Guid Id) : IQuery<Domain.Models.{{ model.key }}>;

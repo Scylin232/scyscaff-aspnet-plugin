@@ -1,0 +1,5 @@
+﻿using Application.Abstractions.Messaging;
+
+namespace Application.CQRS.{{ model.key }}.Queries;
+
+public sealed record GetAll{{ model.key }}sQuery : IQuery<IEnumerable<Domain.Models.{{ model.key }}>>;

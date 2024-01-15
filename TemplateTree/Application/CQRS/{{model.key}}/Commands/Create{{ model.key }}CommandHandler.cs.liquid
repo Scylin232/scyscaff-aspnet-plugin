@@ -1,0 +1,20 @@
+﻿using Domain.Repositories;
+using SharedKernel.Core;
+using SharedKernel.Repositories;
+using Application.Abstractions.Messaging;
+
+namespace Application.CQRS.{{ model.key }}.Commands;
+
+public sealed class Create{{ model.key }}CommandHandler(I{{ model.key }}Repository {{ model.key | string.downcase }}Repository, IUnitOfWork unitOfWork) : ICommandHandler<Create{{ model.key }}Command>
+{
+    public async Task<Result> Handle(Create{{ model.key }}Command request, CancellationToken cancellationToken)
+    {
+        Domain.Models.{{ model.key }} {{ model.key | string.downcase }} = request.{{ model.key }}DTO.InstantiateFromDTO();
+        
+        await {{ model.key | string.downcase }}Repository.Add({{ model.key | string.downcase }});
+        
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        return Result.Success();
+    }
+}

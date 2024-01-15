@@ -1,0 +1,31 @@
+﻿using Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Infrastructure.Data;
+using Infrastructure.Repositories;
+using SharedKernel.Repositories;
+
+namespace Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddDbContext<DataContext>(options =>
+        {
+            options.UseNpgsql("Host=127.0.0.1;Database=IdentityMicroserviceDatabase;Port=6000;Username=IdentityMicroserviceLogin;Password=IdentityMicroservicePassword;IncludeErrorDetail=true;",
+                optionsBuilder =>
+                {
+                    optionsBuilder.MigrationsAssembly("API");
+                });
+        });
+        
+        serviceCollection.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DataContext>());
+        
+        {{~ for model in service.models ~}}
+        serviceCollection.AddScoped<I{{ model.key }}Repository, {{ model.key }}Repository>();
+        {{~ end ~}}
+        
+        return serviceCollection;
+    }
+}

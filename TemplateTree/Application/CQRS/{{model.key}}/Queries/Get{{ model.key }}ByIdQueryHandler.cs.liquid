@@ -1,0 +1,15 @@
+﻿using Application.Abstractions.Messaging;
+using Domain.Repositories;
+using SharedKernel.Core;
+
+namespace Application.CQRS.{{ model.key }}.Queries;
+
+public sealed class Get{{ model.key }}ByIdQueryHandler(I{{ model.key }}Repository {{ model.key | string.downcase }}Repository) : IQueryHandler<Get{{ model.key }}ByIdQuery, Domain.Models.{{ model.key }}>
+{
+    public async Task<Result<Domain.Models.{{ model.key }}>> Handle(Get{{ model.key }}ByIdQuery request, CancellationToken cancellationToken)
+    {
+        Domain.Models.{{ model.key }}? {{ model.key | string.downcase }} = await {{ model.key | string.downcase }}Repository.GetById(request.Id);
+        
+        return {{ model.key | string.downcase }} is null ? Result.Failure<Domain.Models.{{ model.key }}>(new Error("{{ model.key }}.NotFound", $"{{ model.key }} with id {request.Id} is not found.")) : Result.Success({{ model.key | string.downcase }});
+    }
+}

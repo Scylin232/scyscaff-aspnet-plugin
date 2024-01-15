@@ -1,0 +1,10 @@
+﻿namespace SharedKernel.Repositories;
+
+public interface IGenericRepository<T>
+{
+    Task<IEnumerable<T>> GetAll();
+    Task<T?> GetById(Guid id);
+    Task Add(T newEntity);
+    Task Update(T updatedEntity);
+    Task Remove(T deletedEntity);
+}
