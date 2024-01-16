@@ -12,7 +12,7 @@ public sealed class Update{{ model.key }}CommandHandler(I{{ model.key }}Reposito
         Domain.Models.{{ model.key }}? {{ model.key | string.downcase }} = await {{ model.key | string.downcase }}Repository.GetById(request.Id);
 
         if ({{ model.key | string.downcase }} is null)
-            return Result.Failure<Domain.Models.{{ model.key | string.downcase }}>(new Error("{{ model.key }}.NotFound", $"{{ model.key }} with id {request.Id} is not found."));
+            return Result.Failure<Domain.Models.{{ model.key }}>(new Error("{{ model.key }}.NotFound", $"{{ model.key }} with id {request.Id} is not found."));
         
         request.{{ model.key }}DTO.ModifyFromDTO({{ model.key | string.downcase }});
 

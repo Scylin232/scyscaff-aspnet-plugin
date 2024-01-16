@@ -1,0 +1,64 @@
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using SharedKernel.Core;
+using Domain.Models;
+using Application.CQRS.{{ model.key }}.Commands;
+using Application.CQRS.{{ model.key }}.Queries;
+using Application.DTO;
+
+namespace API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class {{ model.key }}Controller(ISender sender) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAll{{ model.key }}s(CancellationToken cancellationToken)
+    {
+        GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new();
+
+        Result<IEnumerable<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
+
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get{{ model.key }}ById(Guid id, CancellationToken cancellationToken)
+    {
+        Get{{ model.key }}ByIdQuery get{{ model.key }}ByIdQuery = new(id);
+
+        Result<{{ model.key }}> result = await sender.Send(get{{ model.key }}ByIdQuery, cancellationToken);
+
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> Create{{ model.key }}({{ model.key }}DTO {{ model.key | string.downcase }}DTO, CancellationToken cancellationToken)
+    {
+        Create{{ model.key }}Command create{{ model.key }}Command = new({{ model.key | string.downcase }}DTO);
+        
+        Result result = await sender.Send(create{{ model.key }}Command, cancellationToken);
+
+        return result.IsSuccess ? Ok() : BadRequest(result.Error);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update{{ model.key }}(Guid id, {{ model.key }}DTO {{ model.key | string.downcase }}DTO, CancellationToken cancellationToken)
+    {
+        Update{{ model.key }}Command update{{ model.key }}Command = new(id, {{ model.key | string.downcase }}DTO);
+
+        Result result = await sender.Send(update{{ model.key }}Command, cancellationToken);
+
+        return result.IsSuccess ? Ok() : NotFound(result.Error);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete{{ model.key }}(Guid id, CancellationToken cancellationToken)
+    {
+        Delete{{ model.key }}Command delete{{ model.key }}Command = new(id);
+
+        Result result = await sender.Send(delete{{ model.key }}Command, cancellationToken);
+
+        return result.IsSuccess ? Ok() : NotFound(result.Error);
+    }
+}
