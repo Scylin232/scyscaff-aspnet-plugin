@@ -12,6 +12,11 @@
           <Private>false</Private>
           <ExcludeAssets>runtime</ExcludeAssets>
       </ProjectReference>
+        
+      <ProjectReference Include="..\ScyScaff\ScyScaff.Docker\ScyScaff.Docker.csproj">
+        <Private>false</Private>
+        <ExcludeAssets>runtime</ExcludeAssets>
+      </ProjectReference>
       
       <Content Include="./TemplateTree/**/*">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
