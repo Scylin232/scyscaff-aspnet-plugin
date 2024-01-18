@@ -9,11 +9,26 @@ namespace Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection, IConfiguration configuration)
+    {
+        serviceCollection.AddAuth(configuration);
+        serviceCollection.AddDataStorage();
+        
+        return serviceCollection;
+    }
+    
+    private static IServiceCollection AddAuth(this IServiceCollection serviceCollection, IConfiguration configuration)
+    {
+        // To be implemented...
+        
+        return serviceCollection;
+    }
+    
+    public static IServiceCollection AddDataStorage(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddDbContext<DataContext>(options =>
         {
-            options.UseNpgsql("Host=127.0.0.1;Database=IdentityMicroserviceDatabase;Port=6000;Username=IdentityMicroserviceLogin;Password=IdentityMicroservicePassword;IncludeErrorDetail=true;",
+            options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING_DEVELOPMENT"),
                 optionsBuilder =>
                 {
                     optionsBuilder.MigrationsAssembly("API");
@@ -25,6 +40,18 @@ public static class DependencyInjection
         {{~ for model in service.models ~}}
         serviceCollection.AddScoped<I{{ model.key }}Repository, {{ model.key }}Repository>();
         {{~ end ~}}
+        
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+            return serviceCollection;
+        
+        using IServiceScope scope = serviceCollection.BuildServiceProvider().CreateScope();
+        
+        IServiceProvider services = scope.ServiceProvider;
+        
+        DataContext context = services.GetRequiredService<DataContext>();
+        
+        if (context.Database.GetPendingMigrations().Any())
+            context.Database.Migrate();
         
         return serviceCollection;
     }

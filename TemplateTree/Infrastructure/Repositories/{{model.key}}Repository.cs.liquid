@@ -7,9 +7,12 @@ namespace Infrastructure.Repositories;
 
 public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key }}Repository
 {
-    public async Task<IEnumerable<{{ model.key }}>> GetAll()
+    public async Task<IEnumerable<{{ model.key }}>> GetAll(int page, int count)
     {
-        return await dataContext.Set<{{ model.key }}>().ToListAsync();
+        return await dataContext.Set<{{ model.key }}>()
+            .Skip((page - 1) * count)
+            .Take(count)
+            .ToListAsync();
     }
     
     public async Task<{{ model.key }}?> GetById(Guid id)

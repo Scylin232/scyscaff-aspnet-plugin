@@ -12,10 +12,11 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class {{ model.key }}Controller(ISender sender) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> GetAll{{ model.key }}s(CancellationToken cancellationToken)
+    [HttpGet("{page}/{count}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAll{{ model.key }}s(int page, int count, CancellationToken cancellationToken)
     {
-        GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new();
+        GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new(page, count);
 
         Result<IEnumerable<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
 
@@ -23,6 +24,7 @@ public class {{ model.key }}Controller(ISender sender) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> Get{{ model.key }}ById(Guid id, CancellationToken cancellationToken)
     {
         Get{{ model.key }}ByIdQuery get{{ model.key }}ByIdQuery = new(id);

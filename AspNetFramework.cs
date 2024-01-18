@@ -33,7 +33,6 @@ public class AspNetFramework : IFrameworkPlugin, IServiceGenerationEvents
             .WithWorkingDirectory(serviceDirectory.FullName)
             .WithValidation(CommandResultValidation.None)
             .ExecuteAsync();
-        
 
         foreach (string projectPath in projectsPath)
             await Cli.Wrap("dotnet")

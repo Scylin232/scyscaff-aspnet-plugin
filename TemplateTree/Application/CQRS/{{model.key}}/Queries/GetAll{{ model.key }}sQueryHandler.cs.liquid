@@ -8,6 +8,12 @@ public sealed class GetAll{{ model.key }}sQueryHandler(I{{ model.key }}Repositor
 {
     public async Task<Result<IEnumerable<Domain.Models.{{ model.key }}>>> Handle(GetAll{{ model.key }}sQuery request, CancellationToken cancellationToken)
     {
-        return Result.Success(await {{ model.key | string.downcase }}Repository.GetAll());
+        if (request.Page <= 0)
+            return Result.Failure<IEnumerable<Domain.Models.Product>>(new Error("Page.InvalidNumber", "Invalid page number."));
+        
+        if (request.Count is <= 0 or > 100)
+            return Result.Failure<IEnumerable<Domain.Models.Product>>(new Error("Count.InvalidNumber", "Invalid count number."));
+        
+        return Result.Success(await productRepository.GetAll(request.Page, request.Count));
     }
 }
