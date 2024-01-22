@@ -1,9 +1,15 @@
-﻿using Domain.Repositories;
+﻿using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SharedKernel.Repositories;
+using Domain.Repositories;
+using Infrastructure.Auth;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
-using SharedKernel.Repositories;
 
 namespace Infrastructure;
 
@@ -19,7 +25,29 @@ public static class DependencyInjection
     
     private static IServiceCollection AddAuth(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
-        // To be implemented...
+        string domain = $"https://{configuration["Auth0:Domain"]}/";
+
+        serviceCollection.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = domain;
+                options.Audience = configuration["Auth0:Audience"];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = ClaimTypes.NameIdentifier
+                };
+            });
+
+        serviceCollection.AddAuthorization(options =>
+        {
+            {{~ for model in service.models ~}}
+            options.AddPolicy("edit:{{ model.key |  string.downcase }}", policy => policy.Requirements.Add(new HasScopeRequirement("edit:{{ model.key |  string.downcase }}", domain)));
+            options.AddPolicy("write:{{ model.key |  string.downcase }}", policy => policy.Requirements.Add(new HasScopeRequirement("write:{{ model.key |  string.downcase }}", domain)));
+            options.AddPolicy("delete:{{ model.key |  string.downcase }}", policy => policy.Requirements.Add(new HasScopeRequirement("delete:{{ model.key |  string.downcase }}", domain)));
+            {{~ end ~}}
+        });
+
+        serviceCollection.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
         
         return serviceCollection;
     }

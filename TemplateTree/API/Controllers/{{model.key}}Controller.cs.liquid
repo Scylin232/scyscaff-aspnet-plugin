@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SharedKernel.Core;
 using Domain.Models;
 using Application.CQRS.{{ model.key }}.Commands;
@@ -35,6 +36,7 @@ public class {{ model.key }}Controller(ISender sender) : ControllerBase
     }
     
     [HttpPost]
+    [Authorize("write:{{ model.key | string.downcase }}")]
     public async Task<IActionResult> Create{{ model.key }}({{ model.key }}DTO {{ model.key | string.downcase }}DTO, CancellationToken cancellationToken)
     {
         Create{{ model.key }}Command create{{ model.key }}Command = new({{ model.key | string.downcase }}DTO);
@@ -45,6 +47,7 @@ public class {{ model.key }}Controller(ISender sender) : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize("edit:{{ model.key | string.downcase }}")]
     public async Task<IActionResult> Update{{ model.key }}(Guid id, {{ model.key }}DTO {{ model.key | string.downcase }}DTO, CancellationToken cancellationToken)
     {
         Update{{ model.key }}Command update{{ model.key }}Command = new(id, {{ model.key | string.downcase }}DTO);
@@ -55,6 +58,7 @@ public class {{ model.key }}Controller(ISender sender) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize("delete:{{ model.key | string.downcase }}")]
     public async Task<IActionResult> Delete{{ model.key }}(Guid id, CancellationToken cancellationToken)
     {
         Delete{{ model.key }}Command delete{{ model.key }}Command = new(id);

@@ -2,7 +2,7 @@
 
 public interface IGenericRepository<T>
 {
-    Task<IEnumerable<T>> GetAll();
+    Task<IEnumerable<T>> GetAll(int page, int count);
     Task<T?> GetById(Guid id);
     Task Add(T newEntity);
     Task Update(T updatedEntity);
