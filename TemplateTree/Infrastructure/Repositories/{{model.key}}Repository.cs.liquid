@@ -7,12 +7,24 @@ namespace Infrastructure.Repositories;
 
 public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key }}Repository
 {
-    public async Task<IEnumerable<{{ model.key }}>> GetAll(int page, int count)
+    public async Task<PaginatedResult<{{ model.key }}>> GetAll(int page, int count)
     {
-        return await dataContext.Set<{{ model.key }}>()
+        IEnumerable<{{ model.key }}> {{ model.key | string.downcase }}s = await dataContext
+            .Set<{{ model.key }}>()
+            .OrderBy(o => o.CreatedAt)
             .Skip((page - 1) * count)
             .Take(count)
             .ToListAsync();
+
+        int totalCount = await dataContext.Set<{{ model.key }}>().CountAsync();
+        int totalPages = (int)Math.Ceiling((double)totalCount / count);
+        
+        return new PaginatedResult<{{ model.key }}>
+        {
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            Results = {{ model.key | string.downcase }}s
+        };
     }
     
     public async Task<{{ model.key }}?> GetById(Guid id)

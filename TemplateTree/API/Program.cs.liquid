@@ -50,6 +50,14 @@ if (app.Environment.IsDevelopment())
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 
+app.UseCors(config =>
+{
+    config
+        .WithOrigins("SCFVAR_CORS_URL")
+        .WithMethods("GET", "POST", "PUT", "DELETE")
+        .AllowAnyHeader();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

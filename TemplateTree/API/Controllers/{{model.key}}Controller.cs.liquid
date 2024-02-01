@@ -19,7 +19,7 @@ public class {{ model.key }}Controller(ISender sender) : ControllerBase
     {
         GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new(page, count);
 
-        Result<IEnumerable<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
+        Result<PaginatedResult<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
 
         return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
     }

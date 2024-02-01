@@ -41,9 +41,14 @@ public static class DependencyInjection
         serviceCollection.AddAuthorization(options =>
         {
             {{~ for model in service.models ~}}
-            options.AddPolicy("edit:{{ model.key |  string.downcase }}", policy => policy.Requirements.Add(new HasScopeRequirement("edit:{{ model.key |  string.downcase }}", domain)));
-            options.AddPolicy("write:{{ model.key |  string.downcase }}", policy => policy.Requirements.Add(new HasScopeRequirement("write:{{ model.key |  string.downcase }}", domain)));
-            options.AddPolicy("delete:{{ model.key |  string.downcase }}", policy => policy.Requirements.Add(new HasScopeRequirement("delete:{{ model.key |  string.downcase }}", domain)));
+            options.AddPolicy("write:{{ model.key | string.downcase }}s", policy => 
+                policy.RequireClaim("permissions", "write:{{ model.key | string.downcase }}s"));
+            
+            options.AddPolicy("edit:{{ model.key | string.downcase }}s", policy => 
+                policy.RequireClaim("permissions", "edit:{{ model.key | string.downcase }}s"));
+            
+            options.AddPolicy("delete:{{ model.key | string.downcase }}s", policy => 
+                policy.RequireClaim("permissions", "delete:{{ model.key | string.downcase }}s"));
             {{~ end ~}}
         });
 

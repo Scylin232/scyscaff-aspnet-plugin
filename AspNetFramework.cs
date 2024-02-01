@@ -6,11 +6,11 @@ using ScyScaff.Docker.Models.Builder;
 
 namespace ScyScaffPlugin.AspNet;
 
-public class AspNetFramework : IFrameworkPlugin, IServiceGenerationEvents, IDockerCompatible
+public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEvents, IDockerCompatible
 {
-    public string FrameworkName => "aspnet";
+    public string FrameworkName => "aspnet-ddd";
     
-    public string[] SupportedAuth { get; } = { "keycloak" };
+    public string[] SupportedAuth { get; } = { "auth0" };
     public string[] SupportedDatabases { get; } = { "postgresql" };
 
     public string GetTemplateTreePath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TemplateTree\\");
