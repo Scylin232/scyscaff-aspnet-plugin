@@ -9,21 +9,35 @@ public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key 
 {
     public async Task<PaginatedResult<{{ model.key }}>> GetAll(int page, int count)
     {
-        IEnumerable<{{ model.key }}> {{ model.key | string.downcase }}s = await dataContext
-            .Set<{{ model.key }}>()
-            .OrderBy(o => o.CreatedAt)
-            .Skip((page - 1) * count)
-            .Take(count)
+        IQueryable<{{ model.key }}> {{ model.key | string.downcase }}sQuery = dataContext.Set<{{ model.key }}>().AsNoTracking();
+        
+        if (!string.IsNullOrEmpty(context.SearchTerm) && !string.IsNullOrEmpty(context.SearchContent))
+        {
+            Expression<Func<{{ model.key }}, bool>> searchExpression = GetSearchExpression(context.SearchTerm, context.SearchContent);
+            {{ model.key | string.downcase }}sQuery = {{ model.key | string.downcase }}sQuery.Where(searchExpression);
+        }
+        
+        if (!string.IsNullOrEmpty(context.SortColumn))
+        {
+            Expression<Func<{{ model.key }}, object>> orderingProperty = GetOrderingProperty(context.SortColumn);
+            {{ model.key | string.downcase }}sQuery = context.IsAscending
+                ? {{ model.key | string.downcase }}sQuery.OrderBy(orderingProperty)
+                : {{ model.key | string.downcase }}sQuery.OrderByDescending(orderingProperty);
+        }
+        
+        IEnumerable<{{ model.key }}> paged{{ model.key }}s = await {{ model.key | string.downcase }}sQuery
+            .Skip((context.Page - 1) * context.Count)
+            .Take(context.Count)
             .ToListAsync();
-
-        int totalCount = await dataContext.Set<{{ model.key }}>().CountAsync();
-        int totalPages = (int)Math.Ceiling((double)totalCount / count);
+        
+        int totalCount = await {{ model.key | string.downcase }}sQuery.CountAsync();
+        int totalPages = (int)Math.Ceiling((double)totalCount / context.Count);
         
         return new PaginatedResult<{{ model.key }}>
         {
             TotalCount = totalCount,
             TotalPages = totalPages,
-            Results = {{ model.key | string.downcase }}s
+            Results = paged{{ model.key }}s
         };
     }
     
@@ -51,5 +65,31 @@ public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key 
         dataContext.Set<{{ model.key }}>().Remove(deletedEntity);
         
         return Task.CompletedTask;
+    }
+
+    private static Expression<Func<{{ model.key }}, object>> GetOrderingProperty(string? sortColumn)
+    {
+        Expression<Func<{{ model.key }}, object>> orderingProperty = sortColumn switch
+        {
+            {{~ for field in model.value ~}}
+            "{{ field.key | string.downcase }}" => {{ model.key | string.downcase }} => {{ model.key | string.downcase }}.{{ field.key }},
+            {{~ end ~}}
+            _ => {{ model.key | string.downcase }} => {{ model.key | string.downcase }}.Id
+        };
+
+        return orderingProperty;
+    }
+
+    private static Expression<Func<{{ model.key }}, bool>> GetSearchExpression(string searchTerm, string searchContent)
+    {
+        Expression<Func<{{ model.key }}, bool>> searchExpression = searchTerm switch
+        {
+            {{~ for field in model.value ~}}{{~ if field.value == "String" }}
+            "{{ field.key | string.downcase }}" => {{ model.key | string.downcase }} => {{ model.key | string.downcase }}.{{ field.key }}.Contains(searchContent),
+            {{~ end ~}}{{~ end ~}}
+            _ => _ => true
+        };
+
+        return searchExpression;
     }
 }

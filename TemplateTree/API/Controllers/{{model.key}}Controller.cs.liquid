@@ -13,11 +13,11 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class {{ model.key }}Controller(ISender sender) : ControllerBase
 {
-    [HttpGet("{page}/{count}")]
+    [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll{{ model.key }}s(int page, int count, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll{{ model.key }}s([FromQuery] GetAllContext context, CancellationToken cancellationToken)
     {
-        GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new(page, count);
+        GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new(context);
 
         Result<PaginatedResult<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
 
