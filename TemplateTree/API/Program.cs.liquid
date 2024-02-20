@@ -9,11 +9,6 @@ builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
 
-builder.Host.UseSerilog((context, configuration) =>
-{
-    configuration.ReadFrom.Configuration(context.Configuration);
-});
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -39,6 +34,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -58,9 +55,11 @@ app.UseCors(config =>
         .AllowAnyHeader();
 });
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseInfrastructure();
 
 app.MapControllers();
+{{~ if service.flags["Metrics"] == "prometheus" ~}}
+app.MapPrometheusScrapingEndpoint();
+{{~ end ~}}
 
 app.Run();

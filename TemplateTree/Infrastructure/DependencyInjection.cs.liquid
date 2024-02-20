@@ -1,13 +1,15 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+{{~ if service.flags["Metrics"] != null ~}}
+using OpenTelemetry.Metrics;
+{{~ end ~}}
 using SharedKernel.Repositories;
 using Domain.Repositories;
-using Infrastructure.Auth;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 
@@ -17,11 +19,48 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
-        serviceCollection.AddAuth(configuration);
+        {{~ if service.flags["Metrics"] != null ~}}
+        serviceCollection.AddTelemetry();
+        {{~ end ~}}
         serviceCollection.AddDataStorage();
+        serviceCollection.AddAuth(configuration);
         
         return serviceCollection;
     }
+
+    public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder applicationBuilder)
+    {
+        applicationBuilder.UseAuthentication();
+        applicationBuilder.UseAuthorization();
+        
+        return applicationBuilder;
+    }
+    {{~ if service.flags["Metrics"] != null ~}}
+    
+    private static IServiceCollection AddTelemetry(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddOpenTelemetry().WithMetrics(builder =>
+        {
+            {{~ if service.flags["Metrics"] == "prometheus" ~}}
+            builder.AddPrometheusExporter();
+            
+            {{~ end ~}}
+            builder.AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel");
+
+            builder.AddView("http.server.request.duration",
+                new ExplicitBucketHistogramConfiguration
+                {
+                    Boundaries = new[]
+                    {
+                        0, 0.005, 0.01, 0.025, 0.05,
+                        0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10
+                    }
+                });
+        });
+        
+        return serviceCollection;
+    }
+    {{~ end ~}}
     
     private static IServiceCollection AddAuth(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
