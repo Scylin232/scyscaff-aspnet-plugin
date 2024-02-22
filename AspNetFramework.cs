@@ -13,7 +13,7 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
     
     public string[] SupportedAuth { get; } = { "auth0" };
     public string[] SupportedDatabases { get; } = { "postgresql" };
-    public string[] SupportedFlags { get; } = { "Metrics" };
+    public string[] SupportedFlags { get; } = { "Metrics", "Logging" };
 
     public string GetTemplateTreePath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TemplateTree\\");
     

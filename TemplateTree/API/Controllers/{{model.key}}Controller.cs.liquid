@@ -11,60 +11,125 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class {{ model.key }}Controller(ISender sender) : ControllerBase
+public class {{ model.key }}Controller(ISender sender, ILogger<{{ model.key }}Controller> logger) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll{{ model.key }}s([FromQuery] GetAllContext context, CancellationToken cancellationToken)
     {
-        GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new(context);
+        try
+        {
+            GetAll{{ model.key }}sQuery getAll{{ model.key }}sQuery = new(context);
 
-        Result<PaginatedResult<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
+            Result<PaginatedResult<{{ model.key }}>> result = await sender.Send(getAll{{ model.key }}sQuery, cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+            if (result.IsSuccess)
+                logger.LogInformation("GetAll{{ model.key }}s Completed Successfully");
+            else
+                logger.LogWarning($"GetAll{{ model.key }}s Failed: {result.Error}");
+
+            return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "GetAll{{ model.key }}s Threw an Exception");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> Get{{ model.key }}ById(Guid id, CancellationToken cancellationToken)
     {
-        Get{{ model.key }}ByIdQuery get{{ model.key }}ByIdQuery = new(id);
+        try
+        {
+            Get{{ model.key }}ByIdQuery get{{ model.key }}ByIdQuery = new(id);
 
-        Result<{{ model.key }}> result = await sender.Send(get{{ model.key }}ByIdQuery, cancellationToken);
+            Result<{{ model.key }}> result = await sender.Send(get{{ model.key }}ByIdQuery, cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+            if (result.IsSuccess)
+                logger.LogInformation($"Get{{ model.key }}ById ({id}) Completed Successfully");
+            else
+                logger.LogWarning($"Get{{ model.key }}ById ({id}) Failed: {result.Error}");
+
+            return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, $"Get{{ model.key }}ById ({id}) Threw an Exception");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
     
     [HttpPost]
-    [Authorize("write:{{ model.key | string.downcase }}")]
+    [Authorize("write:{{ model.key | string.downcase }}s")]
     public async Task<IActionResult> Create{{ model.key }}({{ model.key }}DTO {{ model.key | string.downcase }}DTO, CancellationToken cancellationToken)
     {
-        Create{{ model.key }}Command create{{ model.key }}Command = new({{ model.key | string.downcase }}DTO);
+        try
+        {
+            Create{{ model.key }}Command create{{ model.key }}Command = new({{ model.key | string.downcase }}DTO);
         
-        Result result = await sender.Send(create{{ model.key }}Command, cancellationToken);
+            Result result = await sender.Send(create{{ model.key }}Command, cancellationToken);
 
-        return result.IsSuccess ? Ok() : BadRequest(result.Error);
+            if (result.IsSuccess)
+                logger.LogInformation("Create{{ model.key }} Completed Successfully");
+            else
+                logger.LogWarning($"Create{{ model.key }} Failed: {result.Error}");
+
+            return result.IsSuccess ? Ok() : BadRequest(result.Error);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Create{{ model.key }} Threw an Exception");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPut("{id}")]
-    [Authorize("edit:{{ model.key | string.downcase }}")]
+    [Authorize("edit:{{ model.key | string.downcase }}s")]
     public async Task<IActionResult> Update{{ model.key }}(Guid id, {{ model.key }}DTO {{ model.key | string.downcase }}DTO, CancellationToken cancellationToken)
     {
-        Update{{ model.key }}Command update{{ model.key }}Command = new(id, {{ model.key | string.downcase }}DTO);
+        try
+        {
+            Update{{ model.key }}Command update{{ model.key }}Command = new(id, {{ model.key | string.downcase }}DTO);
 
-        Result result = await sender.Send(update{{ model.key }}Command, cancellationToken);
+            Result result = await sender.Send(update{{ model.key }}Command, cancellationToken);
 
-        return result.IsSuccess ? Ok() : NotFound(result.Error);
+            if (result.IsSuccess)
+                logger.LogInformation($"Update{{ model.key }} ({id}) Completed Successfully");
+            else
+                logger.LogWarning($"Update{{ model.key }} ({id}) Failed: {result.Error}");
+
+            return result.IsSuccess ? Ok() : NotFound(result.Error);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, $"Update{{ model.key }} ({id}) Threw an Exception");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpDelete("{id}")]
-    [Authorize("delete:{{ model.key | string.downcase }}")]
+    [Authorize("delete:{{ model.key | string.downcase }}s")]
     public async Task<IActionResult> Delete{{ model.key }}(Guid id, CancellationToken cancellationToken)
     {
-        Delete{{ model.key }}Command delete{{ model.key }}Command = new(id);
+        try
+        {
+            Delete{{ model.key }}Command delete{{ model.key }}Command = new(id);
 
-        Result result = await sender.Send(delete{{ model.key }}Command, cancellationToken);
+            Result result = await sender.Send(delete{{ model.key }}Command, cancellationToken);
 
-        return result.IsSuccess ? Ok() : NotFound(result.Error);
+            if (result.IsSuccess)
+                logger.LogInformation($"Delete{{ model.key }} ({id}) Completed Successfully");
+            else
+                logger.LogWarning($"Delete{{ model.key }} ({id}) Failed: {result.Error}");
+
+            return result.IsSuccess ? Ok() : NotFound(result.Error);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, $"Delete{{ model.key }} ({id}) Threw an Exception");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 }

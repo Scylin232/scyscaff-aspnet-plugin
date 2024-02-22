@@ -1,7 +1,11 @@
 using Microsoft.OpenApi.Models;
+using Serilog;
+{{~ if service.flags["Logging"] == "elk" ~}}
+using Serilog.Formatting.Elasticsearch;
+using Serilog.Sinks.Http.BatchFormatters;
+{{~ end ~}}
 using Application;
 using Infrastructure;
-using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +38,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+builder.Host.UseSerilog((context, configuration) =>
+{
+    {{~ if service.flags["Logging"] == "elk" ~}}
+    configuration.WriteTo.DurableHttpUsingFileSizeRolledBuffers(
+        requestUri: new Uri("http://logstash:8080").ToString(),
+        batchFormatter: new ArrayBatchFormatter(),
+        textFormatter: new ElasticsearchJsonFormatter());
+    
+    {{~ end ~}}
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
 
 WebApplication app = builder.Build();
 

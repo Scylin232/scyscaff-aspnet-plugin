@@ -88,6 +88,7 @@ public static class DependencyInjection
             
             options.AddPolicy("delete:{{ model.key | string.downcase }}s", policy => 
                 policy.RequireClaim("permissions", "delete:{{ model.key | string.downcase }}s"));
+            
             {{~ end ~}}
         });
 

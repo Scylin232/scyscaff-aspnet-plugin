@@ -1,6 +1,6 @@
 {
   "Serilog":  {
-    "Using": ["Serilog.Sinks.Console", "Serilog.Sinks.File"],
+    "Using": ["Serilog.Sinks.Console"],
     "MinimumLevel": {
       "Default": "Information",
       "Override": {
@@ -11,20 +11,14 @@
     "WriteTo": [
       {
         "Name": "Console"
-      },
-      {
-        "Name": "File",
-        "Args": {
-          "path": "/logs/log-.txt",
-          "rollingInterval": "Day",
-          "rollOnFileSizeLimit": true
-        }
       }
     ],
     "Enrich": [
       "FromLogContext",
       "WithMachineName",
-      "WithThreadId"
+      "WithThreadId",
+      "WithThreadId",
+      "WithExceptionDetails"
     ]
   },
   "AllowedHosts": "*"
