@@ -1,5 +1,6 @@
 ﻿using CliWrap;
 using System.Reflection;
+using ScyScaff.Core.Models.Events;
 using ScyScaff.Core.Models.Plugins;
 using ScyScaff.Docker.Enums;
 using ScyScaff.Docker.Models.Plugins;
@@ -13,7 +14,11 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
     
     public string[] SupportedAuth { get; } = { "auth0" };
     public string[] SupportedDatabases { get; } = { "postgresql" };
-    public string[] SupportedFlags { get; } = { "Metrics", "Logging" };
+    public Dictionary<string, string[]> SupportedFlags { get; } = new()
+    {
+        { "Logging", new[] { "elk" } },
+        { "Metrics", new[] { "prometheus" } }
+    };
 
     public string GetTemplateTreePath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TemplateTree\\");
     

@@ -5,6 +5,6 @@ namespace Domain.Models;
 public sealed class {{ model.key }}(Guid id) : Entity(id)
 {
     {{~ for field in model.value ~}}
-    public {{ field.value | string.downcase }} {{ field.key }} { get; set; }
+    public {{ field.value }} {{ field.key }} { get; set; }
     {{~ end ~}}
 }

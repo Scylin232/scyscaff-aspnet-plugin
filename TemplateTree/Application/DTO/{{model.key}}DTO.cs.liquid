@@ -6,7 +6,7 @@ namespace Application.DTO;
 public class {{ model.key }}DTO : IDTO<{{ model.key }}>
 {
     {{~ for field in model.value ~}}
-    public required {{ field.value | string.downcase }} {{ field.key }} { get; set; }
+    public required {{ field.value }} {{ field.key }} { get; set; }
     {{~ end ~}}
     
     public {{ model.key }} InstantiateFromDTO()

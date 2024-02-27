@@ -84,7 +84,7 @@ public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key 
     {
         Expression<Func<{{ model.key }}, bool>> searchExpression = searchTerm switch
         {
-            {{~ for field in model.value ~}}{{~ if field.value == "String" }}
+            {{~ for field in model.value ~}}{{~ if field.value == "string" }}
             "{{ field.key | string.downcase }}" => {{ model.key | string.downcase }} => {{ model.key | string.downcase }}.{{ field.key }}.Contains(searchContent),
             {{~ end ~}}{{~ end ~}}
             _ => _ => true
