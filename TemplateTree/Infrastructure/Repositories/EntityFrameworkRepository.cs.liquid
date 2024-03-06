@@ -1,0 +1,94 @@
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+using SharedKernel.Core;
+using SharedKernel.Domain;
+using SharedKernel.Repositories;
+using Infrastructure.Data;
+
+namespace Infrastructure.Repositories;
+
+public abstract class EntityFrameworkRepository<T>(DataContext dataContext) : IGenericRepository<T>
+    where T : Entity
+{
+    public async Task<PaginatedResult<T>> GetAll(GetAllContext context)
+    {
+        IQueryable<T> entitiesQuery = dataContext.Set<T>().AsNoTracking();
+        
+        if (!string.IsNullOrEmpty(context.SearchTerm) && !string.IsNullOrEmpty(context.SearchContent))
+        {
+            Expression<Func<T, bool>> searchExpression = GetSearchExpression(context.SearchTerm, context.SearchContent);
+            entitiesQuery = entitiesQuery.Where(searchExpression);
+        }
+        
+        if (!string.IsNullOrEmpty(context.SortColumn))
+        {
+            Expression<Func<T, object>> orderingProperty = GetOrderingProperty(context.SortColumn);
+            entitiesQuery = context.IsAscending
+                ? entitiesQuery.OrderBy(orderingProperty)
+                : entitiesQuery.OrderByDescending(orderingProperty);
+        }
+        
+        IEnumerable<T> pagedEntities = await entitiesQuery
+            .Skip((context.Page - 1) * context.Count)
+            .Take(context.Count)
+            .ToListAsync();
+        
+        int totalCount = await entitiesQuery.CountAsync();
+        int totalPages = (int)Math.Ceiling((double)totalCount / context.Count);
+        
+        return new PaginatedResult<T>
+        {
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            Results = pagedEntities
+        };
+    }
+
+    public async Task<T?> GetById(Guid id)
+    {
+        return await dataContext.Set<T>().SingleOrDefaultAsync(p => p.Id == id);
+    }
+
+    public Task Add(T newEntity)
+    {
+        dataContext.Set<T>().Add(newEntity);
+        
+        return Task.CompletedTask;
+    }
+    
+    public Task Update(T updatedEntity)
+    {
+        updatedEntity.UpdatedAt = DateTime.UtcNow;
+        
+        dataContext.Set<T>().Update(updatedEntity);
+        
+        return Task.CompletedTask;
+    }
+    
+    public Task Remove(T deletedEntity)
+    {
+        dataContext.Set<T>().Remove(deletedEntity);
+        
+        return Task.CompletedTask;
+    }
+    
+    protected virtual Expression<Func<T, object>> GetOrderingProperty(string? sortColumn)
+    {
+        Expression<Func<T, object>> orderingProperty = sortColumn switch
+        {
+            _ => entity => entity.Id
+        };
+        
+        return orderingProperty;
+    }
+
+    protected virtual Expression<Func<T, bool>> GetSearchExpression(string searchTerm, string searchContent)
+    {
+        Expression<Func<T, bool>> searchExpression = searchTerm switch
+        {
+            _ => _ => true
+        };
+
+        return searchExpression;
+    }
+}

@@ -5,69 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key }}Repository
+public class {{ model.key }}Repository(DataContext dataContext) : EntityFrameworkRepository<{{ model.key }}>(dataContext), I{{ model.key }}Repository
 {
-    public async Task<PaginatedResult<{{ model.key }}>> GetAll(int page, int count)
-    {
-        IQueryable<{{ model.key }}> {{ model.key | string.downcase }}sQuery = dataContext.Set<{{ model.key }}>().AsNoTracking();
-        
-        if (!string.IsNullOrEmpty(context.SearchTerm) && !string.IsNullOrEmpty(context.SearchContent))
-        {
-            Expression<Func<{{ model.key }}, bool>> searchExpression = GetSearchExpression(context.SearchTerm, context.SearchContent);
-            {{ model.key | string.downcase }}sQuery = {{ model.key | string.downcase }}sQuery.Where(searchExpression);
-        }
-        
-        if (!string.IsNullOrEmpty(context.SortColumn))
-        {
-            Expression<Func<{{ model.key }}, object>> orderingProperty = GetOrderingProperty(context.SortColumn);
-            {{ model.key | string.downcase }}sQuery = context.IsAscending
-                ? {{ model.key | string.downcase }}sQuery.OrderBy(orderingProperty)
-                : {{ model.key | string.downcase }}sQuery.OrderByDescending(orderingProperty);
-        }
-        
-        IEnumerable<{{ model.key }}> paged{{ model.key }}s = await {{ model.key | string.downcase }}sQuery
-            .Skip((context.Page - 1) * context.Count)
-            .Take(context.Count)
-            .ToListAsync();
-        
-        int totalCount = await {{ model.key | string.downcase }}sQuery.CountAsync();
-        int totalPages = (int)Math.Ceiling((double)totalCount / context.Count);
-        
-        return new PaginatedResult<{{ model.key }}>
-        {
-            TotalCount = totalCount,
-            TotalPages = totalPages,
-            Results = paged{{ model.key }}s
-        };
-    }
-    
-    public async Task<{{ model.key }}?> GetById(Guid id)
-    {
-        return await dataContext.Set<{{ model.key }}>().SingleOrDefaultAsync(p => p.Id == id);
-    }
-    
-    public Task Add({{ model.key }} newEntity)
-    {
-        dataContext.Set<{{ model.key }}>().Add(newEntity);
-        
-        return Task.CompletedTask;
-    }
-    
-    public Task Update({{ model.key }} updatedEntity)
-    {
-        dataContext.Set<{{ model.key }}>().Update(updatedEntity);
-        
-        return Task.CompletedTask;
-    }
-    
-    public Task Remove({{ model.key }} deletedEntity)
-    {
-        dataContext.Set<{{ model.key }}>().Remove(deletedEntity);
-        
-        return Task.CompletedTask;
-    }
-
-    private static Expression<Func<{{ model.key }}, object>> GetOrderingProperty(string? sortColumn)
+    protected override Expression<Func<{{ model.key }}, object>> GetOrderingProperty(string? sortColumn)
     {
         Expression<Func<{{ model.key }}, object>> orderingProperty = sortColumn switch
         {
@@ -80,7 +20,7 @@ public class {{ model.key }}Repository(DataContext dataContext) : I{{ model.key 
         return orderingProperty;
     }
 
-    private static Expression<Func<{{ model.key }}, bool>> GetSearchExpression(string searchTerm, string searchContent)
+    protected override Expression<Func<{{ model.key }}, bool>> GetSearchExpression(string searchTerm, string searchContent)
     {
         Expression<Func<{{ model.key }}, bool>> searchExpression = searchTerm switch
         {
