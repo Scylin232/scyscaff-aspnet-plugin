@@ -1,4 +1,5 @@
-﻿using CliWrap;
+﻿using System.IO.Abstractions;
+using CliWrap;
 using System.Reflection;
 using ScyScaff.Core.Models.Events;
 using ScyScaff.Core.Models.Plugins;
@@ -22,7 +23,7 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
 
     public string GetTemplateTreePath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TemplateTree\\");
     
-    public async Task OnServiceGenerationEnded(DirectoryInfo serviceDirectory)
+    public async Task OnServiceGenerationEnded(IDirectoryInfo serviceDirectory)
     {
         string[] projectsPath =
         {
@@ -114,5 +115,5 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
     }
     
     // We don't need that:
-    public Task OnServiceGenerationStarted(DirectoryInfo serviceDirectory) => Task.CompletedTask;
+    public Task OnServiceGenerationStarted(IDirectoryInfo serviceDirectory) => Task.CompletedTask;
 }
