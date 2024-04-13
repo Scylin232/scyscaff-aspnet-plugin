@@ -2,6 +2,7 @@
 using CliWrap;
 using System.Reflection;
 using ScyScaff.Core.Models.Events;
+using ScyScaff.Core.Models.Parser;
 using ScyScaff.Core.Models.Plugins;
 using ScyScaff.Docker.Enums;
 using ScyScaff.Docker.Models.Plugins;
@@ -56,36 +57,43 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
                 .ExecuteAsync();
     }
     
-    public IEnumerable<DockerComposeService> GetComposeServices(string projectName, string serviceName, int serviceIndex)
+    public IEnumerable<DockerComposeService> GetComposeServices(string projectName, ScaffolderService? service, string serviceName, int serviceIndex)
     {
         List<DockerComposeService> dockerComposeServices = new();
 
+        if (service is null) return dockerComposeServices;
+        
         int databasePort = 5000 + serviceIndex;
         int servicePort = 5001 + serviceIndex;
+
+        DockerComposeService? databaseService = null;
         
-        DockerComposeService databaseService = new DockerComposeService
-        {
-            Type = DockerComposeServiceType.Database,
-            Image = "postgres:16.1",
-            ContainerName = $"{serviceName.ToLower()}-database",
-            EnvironmentVariables = new Dictionary<string, string>
+        if (service.Database == "postgresql")
+            databaseService = new DockerComposeService
             {
-                { "POSTGRES_DB", $"{serviceName}Database" },
-                { "POSTGRES_USER", $"{serviceName}Login" },
-                { "POSTGRES_PASSWORD", $"{serviceName}Password" },
-                { "PGDATA", "/data/postgres" },
-                { "PGPORT", databasePort.ToString() }
-            },
-            Volumes = new Dictionary<string, string>
-            {
-                { $"{serviceName.ToLower()}-database-volume", "/data/postgres" }
-            },
-            Ports = new Dictionary<int, int?>
-            {
-                { databasePort, databasePort }
-            },
-            ExtraProperties = "healthcheck:\n   test: [ \"CMD-SHELL\", \"pg_isready\" ]\n   interval: 10s\n timeout: 5s\n   retries: 5"
-        };
+                Type = DockerComposeServiceType.Database,
+                Image = "postgres:16.1",
+                ContainerName = $"{serviceName.ToLower()}-database",
+                EnvironmentVariables = new Dictionary<string, string>
+                {
+                    { "POSTGRES_DB", $"{serviceName}Database" },
+                    { "POSTGRES_USER", $"{serviceName}Login" },
+                    { "POSTGRES_PASSWORD", $"{serviceName}Password" },
+                    { "PGDATA", "/data/postgres" },
+                    { "PGPORT", databasePort.ToString() }
+                },
+                Volumes = new Dictionary<string, string>
+                {
+                    { $"{serviceName.ToLower()}-database-volume", "/data/postgres" }
+                },
+                Ports = new Dictionary<int, int?>
+                {
+                    { databasePort, databasePort }
+                },
+                ExtraProperties = "healthcheck:\n   test: [ \"CMD-SHELL\", \"pg_isready\" ]\n   interval: 10s\n timeout: 5s\n   retries: 5"
+            };
+
+        if (databaseService is null) return dockerComposeServices;
         
         DockerComposeService frameworkService = new DockerComposeService
         {
@@ -94,7 +102,7 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
             ContainerName = $"{serviceName.ToLower()}-service",
             Dependencies = new Dictionary<string, ComposeDependency>
             {
-                { databaseService.ContainerName, new ComposeDependency { Condition = "service_healthy" } }
+                { databaseService.ContainerName!, new ComposeDependency { Condition = "service_healthy" } }
             },
             EnvironmentVariables = new Dictionary<string, string>
             {
