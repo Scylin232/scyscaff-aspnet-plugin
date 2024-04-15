@@ -21,5 +21,11 @@
       "WithExceptionDetails"
     ]
   },
-  "AllowedHosts": "*"
+{{~ if config.auth == "auth0" ~}}
+  "AllowedHosts": "*",
+  "Auth0": {
+    "Audience": "AUDIENCE_AUTH_0",
+    "Domain": "DOMAIN_AUTH_0"
+  },
+{{~ end ~}}
 }

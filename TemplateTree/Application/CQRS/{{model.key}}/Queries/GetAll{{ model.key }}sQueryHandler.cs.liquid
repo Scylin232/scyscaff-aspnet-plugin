@@ -4,16 +4,16 @@ using SharedKernel.Core;
 
 namespace Application.CQRS.{{ model.key }}.Queries;
 
-public sealed class GetAll{{ model.key }}sQueryHandler(I{{ model.key }}Repository {{ model.key | string.downcase }}Repository) : IQueryHandler<GetAll{{ model.key }}sQuery, IPaginatedResult<Domain.Models.{{ model.key }}>>
+public sealed class GetAll{{ model.key }}sQueryHandler(I{{ model.key }}Repository {{ model.key | string.downcase }}Repository) : IQueryHandler<GetAll{{ model.key }}sQuery, PaginatedResult<Domain.Models.{{ model.key }}>>
 {
-    public async Task<Result<IPaginatedResult<Domain.Models.{{ model.key }}>>> Handle(GetAll{{ model.key }}sQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedResult<Domain.Models.{{ model.key }}>>> Handle(GetAll{{ model.key }}sQuery request, CancellationToken cancellationToken)
     {
         if (request.Context.Page <= 0)
-            return Result.Failure<IPaginatedResult<Domain.Models.Product>>(new Error("Page.InvalidNumber", "Invalid page number."));
+            return Result.Failure<PaginatedResult<Domain.Models.{{ model.key }}>>(new Error("Page.InvalidNumber", "Invalid page number."));
         
         if (request.Context.Count is <= 0 or > 100)
-            return Result.Failure<IPaginatedResult<Domain.Models.Product>>(new Error("Count.InvalidNumber", "Invalid count number."));
+            return Result.Failure<PaginatedResult<Domain.Models.{{ model.key }}>>(new Error("Count.InvalidNumber", "Invalid count number."));
         
-        return Result.Success(await productRepository.GetAll(request.Context));
+        return Result.Success(await {{ model.key | string.downcase }}Repository.GetAll(request.Context));
     }
 }

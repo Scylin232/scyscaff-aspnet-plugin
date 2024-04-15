@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Messaging;
+using SharedKernel.Core;
 
 namespace Application.CQRS.{{ model.key }}.Queries;
 
-public sealed record GetAll{{ model.key }}sQuery(GetAllContext Context) : IQuery<IPaginatedResult<Domain.Models.{{ model.key }}>>;
+public sealed record GetAll{{ model.key }}sQuery(GetAllContext Context) : IQuery<PaginatedResult<Domain.Models.{{ model.key }}>>;

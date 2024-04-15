@@ -92,8 +92,6 @@ public static class DependencyInjection
             {{~ end ~}}
         });
 
-        serviceCollection.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
-        
         return serviceCollection;
     }
     
@@ -101,11 +99,7 @@ public static class DependencyInjection
     {
         serviceCollection.AddDbContext<DataContext>(options =>
         {
-            options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING_DEVELOPMENT"),
-                optionsBuilder =>
-                {
-                    optionsBuilder.MigrationsAssembly("API");
-                });
+            options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING_DEVELOPMENT"));
         });
         
         serviceCollection.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DataContext>());
