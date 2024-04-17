@@ -21,11 +21,12 @@
       "WithExceptionDetails"
     ]
   },
-{{~ if config.auth == "auth0" ~}}
   "AllowedHosts": "*",
-  "Auth0": {
-    "Audience": "AUDIENCE_AUTH_0",
-    "Domain": "DOMAIN_AUTH_0"
+  "CORSUrls": ["SCF_CORS_URL"]
+{{~ if config.auth == "auth0" ~}}
+  ,"Auth0": {
+    "Audience": "SCF_AUTH0_AUDIENCE",
+    "Domain": "SCF_AUTH0_DOMAIN"
   },
 {{~ end ~}}
 }

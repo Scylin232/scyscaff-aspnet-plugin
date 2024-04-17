@@ -24,7 +24,7 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
 
     public string GetTemplateTreePath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TemplateTree\\");
     
-    public async Task OnServiceGenerationEnded(IDirectoryInfo serviceDirectory)
+    public async Task OnServiceGenerationEnded(IDirectoryInfo serviceDirectory, ScaffolderService? service)
     {
         string[] projectsPath =
         {
@@ -43,6 +43,18 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
                 .Add(serviceDirectory.Name))
             .WithWorkingDirectory(serviceDirectory.FullName)
             .ExecuteAsync();
+        
+        if (service?.Database is "postgresql")
+            await Cli.Wrap("dotnet")
+                .WithArguments(args => args
+                    .Add("ef")
+                    .Add("migrations")
+                    .Add("add")
+                    .Add("InitialCreate")
+                    .Add("--project")
+                    .Add("Infrastructure"))
+                .WithWorkingDirectory(serviceDirectory.FullName)
+                .ExecuteAsync();
 
         foreach (string projectPath in projectsPath)
         {
@@ -126,5 +138,5 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
     }
     
     // We don't need that:
-    public Task OnServiceGenerationStarted(IDirectoryInfo serviceDirectory) => Task.CompletedTask;
+    public Task OnServiceGenerationStarted(IDirectoryInfo serviceDirectory, ScaffolderService? service) => Task.CompletedTask;
 }

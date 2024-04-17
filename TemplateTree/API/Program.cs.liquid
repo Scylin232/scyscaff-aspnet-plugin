@@ -64,7 +64,7 @@ app.UseHttpsRedirection();
 app.UseCors(config =>
 {
     config
-        .WithOrigins("SCFVAR_CORS_URL")
+        .WithOrigins(builder.Configuration.GetSection("CORSUrls").Get<string[]>()!)
         .WithMethods("GET", "POST", "PUT", "DELETE")
         .AllowAnyHeader();
 });
