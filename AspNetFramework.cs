@@ -26,6 +26,8 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
     
     public async Task OnServiceGenerationEnded(IDirectoryInfo serviceDirectory, ScaffolderService? service)
     {
+        if (File.Exists(Path.Combine(serviceDirectory.FullName, $"{serviceDirectory.Name}.sln"))) return;
+        
         string[] projectsPath =
         {
             "API/API.csproj",
@@ -57,7 +59,6 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
                 .ExecuteAsync();
 
         foreach (string projectPath in projectsPath)
-        {
             await Cli.Wrap("dotnet")
                 .WithArguments(args => args
                     .Add("sln")
@@ -66,7 +67,6 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
                     .Add(projectPath))
                 .WithWorkingDirectory(serviceDirectory.FullName)
                 .ExecuteAsync();
-        }
     }
     
     public IEnumerable<DockerComposeService> GetComposeServices(string projectName, ScaffolderService? service, string serviceName, int serviceIndex)
