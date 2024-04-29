@@ -1,6 +1,6 @@
 using Microsoft.OpenApi.Models;
 using Serilog;
-{{~ if service.flags["Logging"] == "elk" ~}}
+{{~ if entity.flags["Logging"] == "elk" ~}}
 using Serilog.Formatting.Elasticsearch;
 using Serilog.Sinks.Http.BatchFormatters;
 {{~ end ~}}
@@ -40,7 +40,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Host.UseSerilog((context, configuration) =>
 {
-    {{~ if service.flags["Logging"] == "elk" ~}}
+    {{~ if entity.flags["Logging"] == "elk" ~}}
     configuration.WriteTo.DurableHttpUsingFileSizeRolledBuffers(
         requestUri: new Uri("http://logstash:8080").ToString(),
         batchFormatter: new ArrayBatchFormatter(),
@@ -72,7 +72,7 @@ app.UseCors(config =>
 app.UseInfrastructure();
 
 app.MapControllers();
-{{~ if service.flags["Metrics"] == "prometheus" ~}}
+{{~ if entity.flags["Metrics"] == "prometheus" ~}}
 app.MapPrometheusScrapingEndpoint();
 {{~ end ~}}
 

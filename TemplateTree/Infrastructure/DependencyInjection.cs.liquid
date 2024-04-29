@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-{{~ if service.flags["Metrics"] != null ~}}
+{{~ if entity.flags["Metrics"] != null ~}}
 using OpenTelemetry.Metrics;
 {{~ end ~}}
 using SharedKernel.Repositories;
@@ -19,7 +19,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
-        {{~ if service.flags["Metrics"] != null ~}}
+        {{~ if entity.flags["Metrics"] != null ~}}
         serviceCollection.AddTelemetry();
         {{~ end ~}}
         serviceCollection.AddDataStorage();
@@ -35,13 +35,13 @@ public static class DependencyInjection
         
         return applicationBuilder;
     }
-    {{~ if service.flags["Metrics"] != null ~}}
+    {{~ if entity.flags["Metrics"] != null ~}}
     
     private static IServiceCollection AddTelemetry(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddOpenTelemetry().WithMetrics(builder =>
         {
-            {{~ if service.flags["Metrics"] == "prometheus" ~}}
+            {{~ if entity.flags["Metrics"] == "prometheus" ~}}
             builder.AddPrometheusExporter();
             
             {{~ end ~}}
@@ -79,7 +79,7 @@ public static class DependencyInjection
 
         serviceCollection.AddAuthorization(options =>
         {
-            {{~ for model in service.models ~}}
+            {{~ for model in entity.models ~}}
             options.AddPolicy("write:{{ model.key | string.downcase }}s", policy => 
                 policy.RequireClaim("permissions", "write:{{ model.key | string.downcase }}s"));
             
@@ -104,7 +104,7 @@ public static class DependencyInjection
         
         serviceCollection.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DataContext>());
         
-        {{~ for model in service.models ~}}
+        {{~ for model in entity.models ~}}
         serviceCollection.AddScoped<I{{ model.key }}Repository, {{ model.key }}Repository>();
         {{~ end ~}}
         

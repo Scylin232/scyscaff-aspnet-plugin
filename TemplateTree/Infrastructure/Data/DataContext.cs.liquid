@@ -6,7 +6,7 @@ namespace Infrastructure.Data;
 
 public class DataContext(DbContextOptions<DataContext> options) : DbContext(options), IUnitOfWork
 {
-    {{~ for model in service.models ~}}
+    {{~ for model in entity.models ~}}
     public DbSet<{{ model.key }}> {{ model.key }} { get; set; }
     {{~ end ~}}
     

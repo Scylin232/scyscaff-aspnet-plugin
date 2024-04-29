@@ -1,6 +1,5 @@
 ﻿using System.IO.Abstractions;
 using CliWrap;
-using System.Reflection;
 using ScyScaff.Core.Models.Events;
 using ScyScaff.Core.Models.Parser;
 using ScyScaff.Core.Models.Plugins;
@@ -10,9 +9,9 @@ using ScyScaff.Docker.Models.Builder;
 
 namespace ScyScaffPlugin.AspNet;
 
-public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEvents, IDockerCompatible
+public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDockerCompatible
 {
-    public string FrameworkName => "aspnet-ddd";
+    public string Name => "aspnet-ddd";
     
     public string[] SupportedAuth { get; } = { "auth0" };
     public string[] SupportedDatabases { get; } = { "postgresql" };
@@ -22,11 +21,9 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
         { "Metrics", new[] { "prometheus" } }
     };
 
-    public string GetTemplateTreePath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TemplateTree\\");
-    
-    public async Task OnServiceGenerationEnded(IDirectoryInfo serviceDirectory, ScaffolderService? service)
+    public async Task OnGenerationEnded(IDirectoryInfo serviceDirectory, IScaffolderEntity? entity)
     {
-        if (File.Exists(Path.Combine(serviceDirectory.FullName, $"{serviceDirectory.Name}.sln"))) return;
+        if (entity is not ScaffolderService service || File.Exists(Path.Combine(serviceDirectory.FullName, $"{serviceDirectory.Name}.sln"))) return;
         
         string[] projectsPath =
         {
@@ -46,7 +43,7 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
             .WithWorkingDirectory(serviceDirectory.FullName)
             .ExecuteAsync();
         
-        if (service?.Database is "postgresql")
+        if (service.Database is "postgresql")
             await Cli.Wrap("dotnet")
                 .WithArguments(args => args
                     .Add("ef")
@@ -69,11 +66,11 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
                 .ExecuteAsync();
     }
     
-    public IEnumerable<DockerComposeService> GetComposeServices(string projectName, ScaffolderService? service, string serviceName, int serviceIndex)
+    public IEnumerable<DockerComposeService> GetComposeServices(string projectName, IScaffolderEntity? entity, string serviceName, int serviceIndex)
     {
         List<DockerComposeService> dockerComposeServices = new();
 
-        if (service is null) return dockerComposeServices;
+        if (entity is not ScaffolderService service) return dockerComposeServices;
         
         // Service index * Number of Docker services to add.
         int portOffset = serviceIndex * 2;
@@ -138,5 +135,5 @@ public class AspNetFramework : IFrameworkTemplatePlugin, ITemplateGenerationEven
     }
     
     // We don't need that:
-    public Task OnServiceGenerationStarted(IDirectoryInfo serviceDirectory, ScaffolderService? service) => Task.CompletedTask;
+    public Task OnGenerationStarted(IDirectoryInfo serviceDirectory, IScaffolderEntity? entity) => Task.CompletedTask;
 }

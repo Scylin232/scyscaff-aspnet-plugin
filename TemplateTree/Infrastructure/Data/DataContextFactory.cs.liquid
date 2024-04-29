@@ -8,7 +8,7 @@ public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
     public DataContext CreateDbContext(string[] args)
     {
         DbContextOptionsBuilder<DataContext> optionsBuilder = new();
-        {{~ if service.database == "postgresql" ~}}
+        {{~ if entity.database == "postgresql" ~}}
         optionsBuilder.UseNpgsql();
         {{~ end ~}}
 
