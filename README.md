@@ -1,0 +1,1 @@
+Plugin designed for use with [ScyScaff](https://github.com/Scylin232/scyscaff).

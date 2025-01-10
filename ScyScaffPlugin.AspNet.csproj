@@ -21,6 +21,10 @@
       <Content Include="./TemplateTree/**/*">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+        
+      <Content Include="./metadata.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>

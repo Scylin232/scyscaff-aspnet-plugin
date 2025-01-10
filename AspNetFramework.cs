@@ -21,9 +21,9 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
         { "Metrics", new[] { "prometheus" } }
     };
 
-    public async Task OnGenerationEnded(IDirectoryInfo serviceDirectory, IScaffolderEntity? entity)
+    public async Task OnGenerationEnded(IDirectoryInfo entityDirectory, IScaffolderEntity? entity)
     {
-        if (entity is not ScaffolderService service || File.Exists(Path.Combine(serviceDirectory.FullName, $"{serviceDirectory.Name}.sln"))) return;
+        if (entity is not ScaffolderService service || File.Exists(Path.Combine(entityDirectory.FullName, $"{entityDirectory.Name}.sln"))) return;
         
         string[] projectsPath =
         {
@@ -39,8 +39,8 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
                 .Add("new")
                 .Add("sln")
                 .Add("--name")
-                .Add(serviceDirectory.Name))
-            .WithWorkingDirectory(serviceDirectory.FullName)
+                .Add(entityDirectory.Name))
+            .WithWorkingDirectory(entityDirectory.FullName)
             .ExecuteAsync();
         
         if (service.Database is "postgresql")
@@ -52,28 +52,28 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
                     .Add("InitialCreate")
                     .Add("--project")
                     .Add("Infrastructure"))
-                .WithWorkingDirectory(serviceDirectory.FullName)
+                .WithWorkingDirectory(entityDirectory.FullName)
                 .ExecuteAsync();
 
         foreach (string projectPath in projectsPath)
             await Cli.Wrap("dotnet")
                 .WithArguments(args => args
                     .Add("sln")
-                    .Add($"{serviceDirectory.Name}.sln")
+                    .Add($"{entityDirectory.Name}.sln")
                     .Add("add")
                     .Add(projectPath))
-                .WithWorkingDirectory(serviceDirectory.FullName)
+                .WithWorkingDirectory(entityDirectory.FullName)
                 .ExecuteAsync();
     }
     
-    public IEnumerable<DockerComposeService> GetComposeServices(string projectName, IScaffolderEntity? entity, string serviceName, int serviceIndex)
+    public IEnumerable<DockerComposeService> GetComposeServices(string projectName, IScaffolderEntity? entity, string entityName, int entityIndex)
     {
         List<DockerComposeService> dockerComposeServices = new();
 
         if (entity is not ScaffolderService service) return dockerComposeServices;
         
-        // Service index * Number of Docker services to add.
-        int portOffset = serviceIndex * 2;
+        // Entity index * Number of Docker services to add.
+        int portOffset = entityIndex * 2;
         
         int servicePort = 5000 + portOffset;
         int databasePort = 5001 + portOffset;
@@ -85,18 +85,18 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
             {
                 Type = DockerComposeServiceType.Database,
                 Image = "postgres:16.1",
-                ContainerName = $"{serviceName.ToLower()}-database",
+                ContainerName = $"{entityName.ToLower()}-database",
                 EnvironmentVariables = new Dictionary<string, string>
                 {
-                    { "POSTGRES_DB", $"{serviceName}Database" },
-                    { "POSTGRES_USER", $"{serviceName}Login" },
-                    { "POSTGRES_PASSWORD", $"{serviceName}Password" },
+                    { "POSTGRES_DB", $"{entityName}Database" },
+                    { "POSTGRES_USER", $"{entityName}Login" },
+                    { "POSTGRES_PASSWORD", $"{entityName}Password" },
                     { "PGDATA", "/data/postgres" },
                     { "PGPORT", databasePort.ToString() }
                 },
                 Volumes = new Dictionary<string, string>
                 {
-                    { $"{serviceName.ToLower()}-database-volume", "/data/postgres" }
+                    { $"{entityName.ToLower()}-database-volume", "/data/postgres" }
                 },
                 Ports = new Dictionary<int, int?>
                 {
@@ -110,8 +110,8 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
         DockerComposeService frameworkService = new DockerComposeService
         {
             Type = DockerComposeServiceType.Framework,
-            Build = new ComposeBuild { Context = $"./{projectName}.{serviceName}/", Dockerfile = "Dockerfile" }, 
-            ContainerName = $"{serviceName.ToLower()}-service",
+            Build = new ComposeBuild { Context = $"./{projectName}.{entityName}/", Dockerfile = "Dockerfile.dev" }, 
+            ContainerName = $"{entityName.ToLower()}-service",
             Dependencies = new Dictionary<string, ComposeDependency>
             {
                 { databaseService.ContainerName!, new ComposeDependency { Condition = "service_healthy" } }
@@ -120,7 +120,7 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
             {
                 { "ASPNETCORE_ENVIRONMENT", "Development" },
                 { "ASPNETCORE_URLS", $"http://+:{servicePort}" },
-                { "CONNECTION_STRING_DEVELOPMENT", $"Host={databaseService.ContainerName};Port={databasePort};Database={serviceName}Database;Username={serviceName}Login;Password={serviceName}Password;IncludeErrorDetail=true;" }
+                { "CONNECTION_STRING_DEVELOPMENT", $"Host={databaseService.ContainerName};Port={databasePort};Database={entityName}Database;Username={entityName}Login;Password={entityName}Password;IncludeErrorDetail=true;" }
             },
             Ports = new Dictionary<int, int?>
             {
@@ -135,5 +135,5 @@ public class AspNetFramework : IFrameworkTemplatePlugin, IGenerationEvents, IDoc
     }
     
     // We don't need that:
-    public Task OnGenerationStarted(IDirectoryInfo serviceDirectory, IScaffolderEntity? entity) => Task.CompletedTask;
+    public Task OnGenerationStarted(IDirectoryInfo entityDirectory, IScaffolderEntity? entity) => Task.CompletedTask;
 }

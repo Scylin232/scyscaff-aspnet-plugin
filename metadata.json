@@ -1,0 +1,4 @@
+{
+	"PluginType": "FrameworkPlugin",
+	"ExecutablePath": "./ScyScaffPlugin.AspNet.dll"
+}
